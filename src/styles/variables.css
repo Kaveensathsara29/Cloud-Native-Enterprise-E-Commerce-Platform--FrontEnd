@@ -1,0 +1,71 @@
+/* CSS Variables defining the Orange and White Theme */
+
+:root {
+  /* Light Theme Colors */
+  --primary: #FF6B00;
+  --primary-hover: #E05E00;
+  --primary-light: #FF9B52;
+  --primary-rgb: 255, 107, 0;
+  
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #FAFAF9;
+  --bg-tertiary: #F5F5F4;
+  --bg-glass: rgba(255, 255, 255, 0.75);
+  --bg-card: #FFFFFF;
+  
+  --text-primary: #1C1917;
+  --text-secondary: #57534E;
+  --text-muted: #A8A29E;
+  --text-on-primary: #FFFFFF;
+  
+  --border-color: #E7E5E4;
+  --border-focus: #FF6B00;
+  
+  --success: #10B981;
+  --error: #EF4444;
+  --warning: #F59E0B;
+  
+  /* Font Stack */
+  --font-sans: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  
+  /* Layout and Sizing */
+  --header-height: 80px;
+  --border-radius-sm: 8px;
+  --border-radius-md: 14px;
+  --border-radius-lg: 24px;
+  --border-radius-full: 9999px;
+  
+  /* Shadows and Elevations */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
+  --shadow-glow: 0 0 20px rgba(255, 107, 0, 0.2);
+  
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark Theme (applied via .dark class on <html>) */
+html.dark {
+  --bg-primary: #0A0A09;
+  --bg-secondary: #121110;
+  --bg-tertiary: #1C1A19;
+  --bg-glass: rgba(10, 10, 9, 0.8);
+  --bg-card: #141312;
+  
+  --text-primary: #FAFAF9;
+  --text-secondary: #D6D3D1;
+  --text-muted: #78716C;
+  --text-on-primary: #000000;
+  
+  --border-color: #2E2B2A;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 20px rgba(255, 107, 0, 0.35);
+}
