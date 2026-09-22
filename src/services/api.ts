@@ -14,39 +14,6 @@ export class ApiError extends Error {
   }
 }
 
-// Token management with localStorage persistence to prevent auto-logout on refresh
-let inMemoryUserToken: string | null = null;
-let inMemoryAdminToken: string | null = null;
-
-export const setAuthToken = (token: string | null): void => {
-  inMemoryUserToken = token;
-  if (typeof window !== 'undefined') {
-    if (token) localStorage.setItem('auth_token', token);
-    else localStorage.removeItem('auth_token');
-  }
-};
-
-export const setAdminToken = (token: string | null): void => {
-  inMemoryAdminToken = token;
-  if (typeof window !== 'undefined') {
-    if (token) localStorage.setItem('admin_token', token);
-    else localStorage.removeItem('admin_token');
-  }
-};
-
-// Retrieve valid JWT token (persists across page refreshes)
-export const getAuthToken = (): string | null => {
-  const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
-  const adminToken = inMemoryAdminToken || (typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null);
-  const userToken = inMemoryUserToken || (typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null);
-
-  if (isAdminRoute && adminToken) {
-    return adminToken;
-  }
-  return userToken || adminToken || null;
-};
-
-
 interface RequestOptions extends RequestInit {
   requiresAuth?: boolean;
 }
@@ -61,14 +28,10 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     headers.set('Content-Type', 'application/json');
   }
 
-  const token = getAuthToken();
-  if (token && !headers.has('Authorization')) {
-    headers.set('Authorization', `Bearer ${token}`);
-  }
-
   const config: RequestInit = {
     ...options,
     headers,
+    credentials: 'include'
   };
 
   try {

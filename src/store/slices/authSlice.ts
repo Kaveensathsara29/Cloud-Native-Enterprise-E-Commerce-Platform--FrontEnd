@@ -1,10 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api, { setAuthToken, setAdminToken } from '../../services/api';
+import api from '../../services/api';
 
 // Clean up other legacy keys, but PRESERVE products, cart, and authentication session data
 if (typeof window !== 'undefined' && window.localStorage) {
   try {
-    const protectedKeys = ['products', 'auth_token', 'auth_user', 'admin_token', 'admin_user'];
+    const protectedKeys = ['products', 'auth_user', 'admin_user'];
     for (let i = localStorage.length - 1; i >= 0; i--) {
       const key = localStorage.key(i);
       if (key && !protectedKeys.includes(key) && !key.startsWith('cart')) {
@@ -114,10 +114,8 @@ export const formatAddress = (raw: any): UserProfile['addresses'][0] => ({
 // Async Thunks
 export const loadUserSession = createAsyncThunk('auth/loadUserSession', async (_, { rejectWithValue }) => {
   try {
-    const authToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-    if (!authToken) return rejectWithValue('No active session');
-
     const profile: any = await api.get('/users/profile');
+    if (profile.isAdmin) return rejectWithValue('No active user session');
     const myOrders: any = await api.get('/orders/myorders').catch(() => []);
     const formattedOrders = Array.isArray(myOrders) ? myOrders.map(formatOrder) : [];
     const fullProfile: UserProfile = {
@@ -135,36 +133,29 @@ export const loadUserSession = createAsyncThunk('auth/loadUserSession', async (_
     // On 401 → clear session. On network/other errors → return cached user as fallback
     if (err?.status === 401) {
       try {
-        localStorage.removeItem('auth_token');
         localStorage.removeItem('auth_user');
       } catch { }
       return rejectWithValue('Session expired');
     }
-    // Transient error — try to serve cached profile so user stays logged in
-    try {
-      const cachedUser = localStorage.getItem('auth_user');
-      if (cachedUser) return JSON.parse(cachedUser) as UserProfile;
-    } catch { }
     return rejectWithValue('No active session');
   }
 });
 
 export const loadAdminSession = createAsyncThunk('auth/loadAdminSession', async () => {
-  const adminToken = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null;
-  const cachedAdmin = typeof window !== 'undefined' ? localStorage.getItem('admin_user') : null;
-  const admin: { email: string } | null = adminToken && cachedAdmin ? JSON.parse(cachedAdmin) : null;
-  const isAdminAuthenticated = Boolean(adminToken && admin);
+  try {
+    const profile: any = await api.get('/users/profile');
+    if (!profile.isAdmin) return { admin: null, orders: [], isAdminAuthenticated: false };
 
-  let orders: Order[] = [];
-  if (isAdminAuthenticated) {
-    try {
-      const ordersData: any = await api.get('/orders');
-      if (Array.isArray(ordersData)) {
-        orders = ordersData.map(formatOrder);
-      }
-    } catch { }
+    const ordersData: any = await api.get('/orders');
+    const orders = Array.isArray(ordersData) ? ordersData.map(formatOrder) : [];
+    return {
+      admin: { email: profile.email },
+      orders,
+      isAdminAuthenticated: true
+    };
+  } catch {
+    return { admin: null, orders: [], isAdminAuthenticated: false };
   }
-  return { admin, orders, isAdminAuthenticated };
 });
 
 export const loginUser = createAsyncThunk(
@@ -172,8 +163,6 @@ export const loginUser = createAsyncThunk(
   async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
     try {
       const data: any = await api.post('/auth/login', { email, password });
-      setAuthToken(data.token);
-
       const ordersData: any = await api.get('/orders/myorders').catch(() => []);
       const userOrders = Array.isArray(ordersData) ? ordersData.map(formatOrder) : [];
 
@@ -199,8 +188,6 @@ export const signupUser = createAsyncThunk(
   async ({ name, email, password }: { name: string; email: string; password: string }, { rejectWithValue }) => {
     try {
       const data: any = await api.post('/auth/register', { name, email, password });
-      setAuthToken(data.token);
-
       const profile: UserProfile = {
         name: data.name,
         email: data.email,
@@ -221,10 +208,6 @@ export const googleLoginUser = createAsyncThunk(
   async (info: { name: string; email: string; picture?: string; idToken?: string }, { rejectWithValue }) => {
     try {
       const data: any = await api.post('/auth/google', info);
-      if (data.token) {
-        setAuthToken(data.token);
-      }
-
       const ordersData: any = await api.get('/orders/myorders').catch(() => []);
       const userOrders = Array.isArray(ordersData) ? ordersData.map(formatOrder) : [];
 
@@ -246,7 +229,7 @@ export const googleLoginUser = createAsyncThunk(
 );
 
 export const logoutUser = createAsyncThunk('auth/logoutUser', async () => {
-  setAuthToken(null);
+  await api.post('/auth/logout').catch(() => undefined);
   try { localStorage.removeItem('auth_user'); } catch { }
 });
 
@@ -349,7 +332,6 @@ export const adminLoginUser = createAsyncThunk(
   async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
     try {
       const data: any = await api.post('/auth/admin-login', { email, password });
-      setAdminToken(data.token);
       const adminDetails = { email: data.email };
       try { localStorage.setItem('admin_user', JSON.stringify(adminDetails)); } catch { }
 
@@ -366,7 +348,7 @@ export const adminLoginUser = createAsyncThunk(
 );
 
 export const adminLogoutUser = createAsyncThunk('auth/adminLogoutUser', async () => {
-  setAdminToken(null);
+  await api.post('/auth/logout').catch(() => undefined);
   try { localStorage.removeItem('admin_user'); } catch { }
 });
 
@@ -404,39 +386,18 @@ export const refreshOrdersThunk = createAsyncThunk('auth/refreshOrders', async (
   return null;
 });
 
-// Hydrate initial state from localStorage so there is no logged-out flash on page refresh
+// Authentication is restored by validating the HttpOnly cookie with the backend.
 const getInitialState = (): AuthState => {
-  try {
-    const authToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-    const cachedUser = typeof window !== 'undefined' ? localStorage.getItem('auth_user') : null;
-    const adminToken = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null;
-    const cachedAdmin = typeof window !== 'undefined' ? localStorage.getItem('admin_user') : null;
-
-    const user: UserProfile | null = authToken && cachedUser ? JSON.parse(cachedUser) : null;
-    const admin: { email: string } | null = adminToken && cachedAdmin ? JSON.parse(cachedAdmin) : null;
-
-    return {
-      user,
-      isAuthenticated: Boolean(authToken && user),
-      admin,
-      isAdminAuthenticated: Boolean(adminToken && admin),
-      allOrders: [],
-      isLoginModalOpen: false,
-      loading: false,
-      error: null
-    };
-  } catch {
-    return {
-      user: null,
-      isAuthenticated: false,
-      admin: null,
-      isAdminAuthenticated: false,
-      allOrders: [],
-      isLoginModalOpen: false,
-      loading: false,
-      error: null
-    };
-  }
+  return {
+    user: null,
+    isAuthenticated: false,
+    admin: null,
+    isAdminAuthenticated: false,
+    allOrders: [],
+    isLoginModalOpen: false,
+    loading: false,
+    error: null
+  };
 };
 
 const initialState: AuthState = getInitialState();
