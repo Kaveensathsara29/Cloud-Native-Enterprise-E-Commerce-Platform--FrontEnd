@@ -1,6 +1,10 @@
 // API Service for Master E-Commerce Application
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || (
+  typeof window !== 'undefined'
+    ? `${window.location.protocol}//${window.location.hostname}:5001/api`
+    : 'http://localhost:5001/api'
+);
 
 export class ApiError extends Error {
   status: number;

@@ -30,13 +30,31 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 // AppInitializer to hydrate Redux state (sessions, products, promos) on startup
 function AppInitializer({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
+  const [isAuthReady, setIsAuthReady] = useState(false);
 
   useEffect(() => {
-    dispatch(loadUserSession());
-    dispatch(loadAdminSession());
+    const restoreSessions = async () => {
+      await Promise.all([
+        dispatch(loadUserSession()),
+        dispatch(loadAdminSession())
+      ]);
+      setIsAuthReady(true);
+    };
+
+    restoreSessions();
     dispatch(fetchProducts());
     dispatch(fetchPromos());
   }, [dispatch]);
+
+  if (!isAuthReady) {
+    return (
+      <div className="app-loading-screen" role="status" aria-label="Loading">
+        <span className="app-loading-dot" />
+        <span className="app-loading-dot" />
+        <span className="app-loading-dot" />
+      </div>
+    );
+  }
 
   return <>{children}</>;
 }
