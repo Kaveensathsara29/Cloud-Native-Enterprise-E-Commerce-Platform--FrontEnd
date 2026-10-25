@@ -1,18 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
 
-// Clean up other legacy keys, but PRESERVE products, cart, and authentication session data
-if (typeof window !== 'undefined' && window.localStorage) {
-  try {
-    const protectedKeys = ['products', 'auth_user', 'admin_user'];
-    for (let i = localStorage.length - 1; i >= 0; i--) {
-      const key = localStorage.key(i);
-      if (key && !protectedKeys.includes(key) && !key.startsWith('cart')) {
-        localStorage.removeItem(key);
-      }
-    }
-  } catch { }
-}
 
 export interface OrderItem {
   productId: string;

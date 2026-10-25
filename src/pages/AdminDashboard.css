@@ -1110,5 +1110,114 @@
   border-color: var(--text-secondary);
 }
 
+/* ═══════════════════════ MOBILE RESPONSIVE STYLES ═══════════════════════ */
+@media (max-width: 992px) {
+  .admin-dashboard-container {
+    flex-direction: column;
+    margin-top: calc(var(--header-height) + 20px);
+    gap: 20px;
+    padding: 0 16px 40px;
+  }
+  .admin-sidebar {
+    width: 100%;
+    margin-top: 0;
+    padding: 16px;
+    border-radius: var(--border-radius-md);
+  }
+  .admin-sidebar-header {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+  }
+  .admin-sidebar-menu {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .admin-menu-item {
+    flex: 1 1 calc(33.333% - 8px);
+    justify-content: center;
+    padding: 10px 12px;
+    font-size: 13px;
+    text-align: center;
+  }
+  .form-sections-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .analytics-charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-dashboard-container {
+    padding: 0 12px 30px;
+  }
+  .admin-menu-item {
+    flex: 1 1 calc(50% - 8px);
+    font-size: 12px;
+    padding: 8px;
+  }
+  .admin-menu-item svg {
+    width: 15px;
+    height: 15px;
+  }
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .stat-card {
+    padding: 16px;
+  }
+  .stat-card h3 {
+    font-size: 1.25rem;
+  }
+  .admin-tab-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .admin-header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+  .admin-header-actions .btn {
+    width: 100%;
+  }
+  .inventory-search-bar {
+    width: 100%;
+  }
+  .form-group-row {
+    flex-direction: column;
+    gap: 14px;
+  }
+  .admin-product-form {
+    padding: 16px;
+  }
+  .admin-table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--border-radius-sm);
+  }
+  .admin-table {
+    min-width: 580px;
+  }
+  .admin-table th, .admin-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 440px) {
+  .admin-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .admin-menu-item {
+    flex: 1 1 100%;
+  }
+}
+
+
 
 

@@ -9,8 +9,9 @@ import {
   BarChart3, Plus, ShoppingBag, Box, Trash2, Edit,
   X, Check, LogOut, Package, RefreshCw, AlertCircle,
   Tag, Search, Star, Percent, Filter, CheckSquare, Square,
-  ExternalLink, Eye
+  ExternalLink, Eye, Cloud, UploadCloud
 } from 'lucide-react';
+import api from '../services/api';
 import './AdminDashboard.css';
 
 type AdminTab = 'overview' | 'analytics' | 'add' | 'products' | 'orders' | 'promo';
@@ -63,17 +64,49 @@ export const AdminDashboard: React.FC = () => {
   const [newPromoCode, setNewPromoCode] = useState('');
   const [newPromoDiscount, setNewPromoDiscount] = useState('');
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // ── Google Drive Storage state ──────────────────────────────────
+  const [isUploadingToDrive, setIsUploadingToDrive] = useState(false);
+  const [driveStatus, setDriveStatus] = useState<{ configured: boolean; authUrl?: string } | null>(null);
+
+  React.useEffect(() => {
+    // Check Google Drive OAuth status from backend
+    api.get<{ configured: boolean; authUrl: string }>('/drive/status')
+      .then(res => setDriveStatus(res))
+      .catch(() => setDriveStatus({ configured: false }));
+  }, []);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
-        setNewProduct(prev => ({ ...prev, imageUrl: reader.result as string }));
+    // Reset input so same file selection triggers change if needed
+    e.target.value = '';
+
+    setIsUploadingToDrive(true);
+    addToast('Uploading image to Google Drive storage (OAuth)...', 'info');
+
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const res: any = await api.upload('/upload', formData);
+      if (res && res.url) {
+        setNewProduct(prev => ({ ...prev, imageUrl: res.url }));
+        addToast('Product image uploaded directly to Google Drive!', 'success');
+      } else {
+        throw new Error(res?.message || 'Google Drive upload failed');
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err: any) {
+      console.warn('[AdminDashboard] Google Drive upload error:', err);
+      if (err.data?.requiresAuth && err.data?.authUrl) {
+        setDriveStatus(prev => ({ ...prev, configured: false, authUrl: err.data.authUrl }));
+        addToast('Google Drive OAuth authentication required. Click "Connect Google Drive" below.', 'error');
+      } else {
+        addToast(err.message || 'Failed to upload image to Google Drive.', 'error');
+      }
+    } finally {
+      setIsUploadingToDrive(false);
+    }
   };
 
   // ── Analytics computations (All hooks called unconditionally) ───
@@ -425,12 +458,33 @@ export const AdminDashboard: React.FC = () => {
                       </select>
                     </div>
                     <div className="form-group">
-                      <label>Product Image</label>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <label style={{ margin: 0 }}>Product Image</label>
+                        {driveStatus && (
+                          <div style={{ fontSize: '12px' }}>
+                            {driveStatus.configured ? (
+                              <span style={{ color: '#10B981', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
+                                <Cloud size={14} /> Google Drive Active
+                              </span>
+                            ) : (
+                              <a
+                                href={driveStatus.authUrl || `http://localhost:5001/api/drive/authorize`}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ color: '#ff6b00', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}
+                                title="Click to authorize Google Drive OAuth storage"
+                              >
+                                <Cloud size={14} /> Connect Google Drive OAuth
+                              </a>
+                            )}
+                          </div>
+                        )}
+                      </div>
                       <div className="image-upload-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <input
                           type="text"
                           className="form-input"
-                          placeholder="Image URL or upload below"
+                          placeholder="Google Drive Image URL or upload below"
                           value={newProduct.imageUrl}
                           onChange={e => setNewProduct({ ...newProduct, imageUrl: e.target.value })}
                         />
@@ -440,22 +494,46 @@ export const AdminDashboard: React.FC = () => {
                             id="productImageFile"
                             accept="image/*"
                             style={{ display: 'none' }}
+                            disabled={isUploadingToDrive}
                             onChange={handleImageUpload}
                           />
-                          <label htmlFor="productImageFile" className="btn btn-sm btn-secondary" style={{ cursor: 'pointer', margin: 0, padding: '8px 16px', height: 'auto', fontSize: '13px', display: 'inline-flex', alignItems: 'center' }}>
-                            Upload from Computer
+                          <label
+                            htmlFor="productImageFile"
+                            className="btn btn-sm btn-secondary"
+                            style={{
+                              cursor: isUploadingToDrive ? 'not-allowed' : 'pointer',
+                              margin: 0,
+                              padding: '8px 16px',
+                              height: 'auto',
+                              fontSize: '13px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              opacity: isUploadingToDrive ? 0.7 : 1
+                            }}
+                          >
+                            <UploadCloud size={15} />
+                            {isUploadingToDrive ? 'Uploading to Google Drive...' : 'Upload to Google Drive'}
                           </label>
                           {newProduct.imageUrl && (
-                            <span style={{ fontSize: '12px', color: 'var(--success)', fontWeight: '600' }}>✔ Loaded</span>
+                            <span style={{ fontSize: '12px', color: 'var(--success)', fontWeight: '600' }}>
+                              ✔ {newProduct.imageUrl.includes('google') ? 'Google Drive Stored' : 'Loaded'}
+                            </span>
                           )}
                         </div>
                         {newProduct.imageUrl && (
-                          <div className="image-preview" style={{ marginTop: '4px' }}>
+                          <div className="image-preview" style={{ marginTop: '4px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <img
                               src={newProduct.imageUrl}
                               alt="Preview"
                               style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--border-color)' }}
                             />
+                            {newProduct.imageUrl.includes('google') && (
+                              <div style={{ fontSize: '12px' }}>
+                                <span style={{ fontWeight: 600, color: '#0F172A', display: 'block' }}>☁ Stored in Google Drive</span>
+                                <span style={{ color: '#64748B', fontSize: '11px' }}>Cloud OAuth URL generated</span>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

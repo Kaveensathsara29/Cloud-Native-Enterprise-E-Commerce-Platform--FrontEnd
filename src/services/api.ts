@@ -91,6 +91,13 @@ export const api = {
 
   delete: <T>(endpoint: string, options?: RequestOptions) =>
     request<T>(endpoint, { ...options, method: 'DELETE' }),
+
+  upload: <T>(endpoint: string, formData: FormData, options?: RequestOptions) =>
+    request<T>(endpoint, {
+      ...options,
+      method: 'POST',
+      body: formData
+    }),
 };
 
 export default api;

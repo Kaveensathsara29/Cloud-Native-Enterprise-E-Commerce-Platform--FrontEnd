@@ -112,15 +112,15 @@ a {
   padding: 0 24px;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .container {
-    padding: 0 14px;
+    padding: 0 10px;
   }
 }
 
 @media (max-width: 480px) {
   .container {
-    padding: 0 12px;
+    padding: 0 8px;
   }
 }
 
@@ -217,24 +217,25 @@ a {
   box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.15);
 }
 
-/* Grid & Flex Utilities */
+/* Grid & Flex Utilities - Exactly 3 Columns per Row on Desktop, Tablet & Mobile */
 .grid-products {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  width: 100%;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .grid-products {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 380px) {
   .grid-products {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
   }
 }
 

@@ -30,6 +30,15 @@
 @media (max-width: 992px) {
   .shop-main-layout {
     grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .shop-sidebar-filters {
+    display: none;
+    margin-bottom: 20px;
+  }
+  .shop-sidebar-filters.mobile-open {
+    display: block;
+    animation: fadeInTab 0.25s ease-in-out;
   }
 }
 
@@ -190,7 +199,34 @@
 .catalog-actions-controls {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+}
+
+.mobile-filter-btn {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--border-radius-sm);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.mobile-filter-btn.active, .mobile-filter-btn:hover {
+  background-color: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+@media (max-width: 992px) {
+  .mobile-filter-btn {
+    display: inline-flex;
+  }
 }
 
 .sorter-select {
@@ -227,24 +263,29 @@
   background-color: var(--bg-tertiary);
 }
 
-/* List Mode View Cards */
+/* Catalog Grid View: Exactly 3 Columns per Row on Desktop, Tablet, and Mobile */
 .catalog-list-view.mode-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  width: 100%;
 }
 
-@media (max-width: 640px) {
+.catalog-item-container {
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
   .catalog-list-view.mode-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 380px) {
   .catalog-list-view.mode-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
   }
 }
 

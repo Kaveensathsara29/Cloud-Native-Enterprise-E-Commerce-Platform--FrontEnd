@@ -37,22 +37,12 @@ export const fetchProducts = createAsyncThunk('products/fetchProducts', async ()
   try {
     const data: any = await api.get('/products');
     if (Array.isArray(data) && data.length > 0) {
-      const normalized = data.map(normalizeProduct);
-      localStorage.setItem('products', JSON.stringify(normalized));
-      return normalized;
+      return data.map(normalizeProduct);
     }
   } catch (err) {
-    console.warn('[ProductsSlice] Backend products fetch failed, using fallback cache:', err);
+    console.warn('[ProductsSlice] Backend products fetch failed, using mock products:', err);
   }
 
-  const saved = localStorage.getItem('products');
-  if (saved) {
-    try {
-      return JSON.parse(saved) as Product[];
-    } catch {
-      return MOCK_PRODUCTS;
-    }
-  }
   return MOCK_PRODUCTS;
 });
 
@@ -124,18 +114,15 @@ export const deleteProductThunk = createAsyncThunk(
   }
 );
 
-const getInitialProducts = (): Product[] => {
-  const saved = localStorage.getItem('products');
-  if (saved) {
-    try {
-      return JSON.parse(saved);
-    } catch { }
-  }
-  return MOCK_PRODUCTS;
-};
+// Clean up any legacy products stored in local storage to free browser storage quota
+if (typeof window !== 'undefined' && window.localStorage) {
+  try {
+    localStorage.removeItem('products');
+  } catch { }
+}
 
 const initialState: ProductsState = {
-  products: getInitialProducts(),
+  products: MOCK_PRODUCTS,
   loading: false,
   error: null
 };
@@ -161,7 +148,6 @@ const productsSlice = createSlice({
 
     builder.addCase(addProductThunk.fulfilled, (state, action) => {
       state.products.push(action.payload);
-      localStorage.setItem('products', JSON.stringify(state.products));
     });
 
     builder.addCase(updateProductThunk.fulfilled, (state, action) => {
@@ -171,12 +157,10 @@ const productsSlice = createSlice({
       } else {
         state.products.push(action.payload);
       }
-      localStorage.setItem('products', JSON.stringify(state.products));
     });
 
     builder.addCase(deleteProductThunk.fulfilled, (state, action) => {
       state.products = state.products.filter((p) => p.id !== action.payload);
-      localStorage.setItem('products', JSON.stringify(state.products));
     });
   }
 });

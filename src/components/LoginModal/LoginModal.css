@@ -334,3 +334,17 @@
   text-align: center;
   line-height: 1.5;
 }
+
+/* ===== Mobile Responsive ===== */
+@media (max-width: 480px) {
+  .login-modal-card {
+    padding: 1.75rem 1.25rem;
+    border-radius: 18px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .login-modal-title {
+    font-size: 1.4rem;
+  }
+}
+

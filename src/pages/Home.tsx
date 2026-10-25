@@ -12,9 +12,9 @@ interface HomeProps {
 export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
   const { products } = useShop();
   const featuredProducts = products.filter((product) => product.featured);
-  const trendingProducts = featuredProducts.length > 0
-    ? featuredProducts
-    : [...products].sort((a, b) => b.rating - a.rating).slice(0, 4);
+  const trendingProducts = featuredProducts.length >= 3
+    ? featuredProducts.slice(0, 6)
+    : [...products].sort((a, b) => b.rating - a.rating).slice(0, 6);
   
   // Real-time Countdown Timer for Deal of the Day
   const [timeLeft, setTimeLeft] = useState({ hours: 14, minutes: 42, seconds: 9 });
@@ -218,7 +218,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
           </button>
         </div>
 
-        <div className="grid-products">
+        <div className="grid-products trending-grid">
           {trendingProducts.map((product) => (
             <ProductCard 
               key={product.id} 

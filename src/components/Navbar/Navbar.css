@@ -421,14 +421,28 @@
   }
 
   .navbar-search-dropdown {
-    width: calc(100vw - 48px);
-    right: -100px;
+    width: calc(100vw - 32px);
+    max-width: 420px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
   }
 }
 
 @media (max-width: 480px) {
   .navbar-search-dropdown {
-    width: calc(100vw - 32px);
-    right: -60px;
+    width: calc(100vw - 24px);
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+  .navbar-logo {
+    font-size: 1.3rem;
+  }
+  .navbar-actions {
+    gap: 10px;
+  }
+  .action-icon-btn {
+    padding: 6px;
   }
 }

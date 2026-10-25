@@ -35,6 +35,7 @@ export const Shop: React.FC<ShopProps> = ({ onNavigate }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showInStockOnly, setShowInStockOnly] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [mobileFilterOpen, setMobileFilterOpen] = useState<boolean>(false);
 
   // Categories list extraction
   const categoriesList = useMemo(() => {
@@ -91,7 +92,7 @@ export const Shop: React.FC<ShopProps> = ({ onNavigate }) => {
       <div className="shop-main-layout">
 
         {/* Left Side Filters Sidebar */}
-        <aside className="shop-sidebar-filters glass-panel">
+        <aside className={`shop-sidebar-filters glass-panel ${mobileFilterOpen ? 'mobile-open' : ''}`}>
           <div className="sidebar-header">
             <h3><SlidersHorizontal size={18} /> Filters</h3>
             <button className="reset-filters-btn" onClick={handleResetFilters}>
@@ -193,6 +194,16 @@ export const Shop: React.FC<ShopProps> = ({ onNavigate }) => {
             </span>
 
             <div className="catalog-actions-controls">
+
+              {/* Mobile Filter Toggle Button */}
+              <button
+                className={`mobile-filter-btn ${mobileFilterOpen ? 'active' : ''}`}
+                onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
+                title="Toggle Filters"
+              >
+                <SlidersHorizontal size={16} />
+                <span>{mobileFilterOpen ? 'Hide Filters' : 'Filters'}</span>
+              </button>
 
               {/* Sorter */}
               <div className="sorter-wrapper">
