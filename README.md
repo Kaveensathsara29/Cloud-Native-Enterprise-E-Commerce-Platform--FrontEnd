@@ -1,4 +1,4 @@
-# 🛍️ E-Commerce Platform - Frontend
+# 🛍️ Cloud-Native Enterprise E-Commerce Platform - Frontend
 
 A responsive, mobile-first client application built with modern web technologies to deliver a seamless shopping, authentication, and checkout experience.
 
